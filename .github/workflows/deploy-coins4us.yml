@@ -1,0 +1,31 @@
+name: Deploy coins4us to Netlify
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "coin-app/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: coin-app/package-lock.json
+
+      - name: Install & Build
+        working-directory: coin-app
+        run: npm ci && npm run build
+
+      - name: Deploy to Netlify
+        uses: netlify/actions/cli@master
+        with:
+          args: deploy --dir=coin-app/dist --site=${{ secrets.NETLIFY_SITE_ID }} --prod
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
