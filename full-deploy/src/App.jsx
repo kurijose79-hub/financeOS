@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { PieChart, Pie, Cell, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { uid, cd, lb, ip, sl, bp, bpFill, bo, Card, Stat, Empty, Modal } from "./ui.jsx";
+import CryptoModule from "./Crypto.jsx";
 
 /* ═══════════════════════════════════════════════════════════════
    FINANCEOS WAR TANK 2.0 — OSAI NEXT-GEN FINANCIAL AI
@@ -18,7 +20,6 @@ const CUR=[
 ];
 const BR={USD:1,MXN:17.15,GBP:.79,CAD:1.36,EUR:.92,JPY:149.5,CNY:7.24,ARS:870,BRL:4.97,CHF:.88,KRW:1325,INR:83.12,AUD:1.53,COP:3925,BTC:.000015,ETH:.00029};
 const CATS=["🍔 Comida","🏠 Vivienda","🚗 Transporte","🎮 Entretenim.","👕 Ropa","💊 Salud","📚 Educación","💼 Trabajo","📱 Tech","✈️ Viajes","🔄 Recurrente","🎁 Otros"];
-const uid=()=>Math.random().toString(36).slice(2,9);
 const fm=(n,c)=>{const x=CUR.find(v=>v.c===c);return `${x?.s||"$"}${Math.abs(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`};
 const cv=(a,fr,to,r)=>fr===to?+a.toFixed(2):+((a/(r[fr]||1))*(r[to]||1)).toFixed(2);
 const spark=(n=20,b=100,v=3)=>{let x=b;return Array.from({length:n},()=>{x+=(Math.random()-.47)*v;return {y:Math.max(0,+x.toFixed(2))}})};
@@ -118,20 +119,6 @@ body{font-family:var(--ft);background:var(--bg);color:var(--tx);-webkit-font-smo
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ac)!important;box-shadow:0 0 0 1px var(--ac)33}
 ::selection{background:var(--ac);color:var(--bg)}
 `;
-
-// ── UI ATOMS ──
-const cd={background:"var(--sf)",borderRadius:"var(--r)",border:"1px solid var(--bd)",padding:"16px 20px"};
-const lb={display:"block",fontSize:10,fontWeight:600,color:"var(--t2)",marginBottom:4,letterSpacing:1.2,textTransform:"uppercase",fontFamily:"var(--mono)"};
-const ip={width:"100%",padding:"10px 14px",borderRadius:6,border:"1px solid var(--bd)",fontSize:13,fontFamily:"var(--mono)",background:"var(--bg)",color:"var(--tx)",marginBottom:14};
-const sl={...ip,appearance:"auto"};
-const bp={padding:"10px 20px",borderRadius:6,border:"1px solid var(--ac)",background:"transparent",color:"var(--ac)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"var(--mono)",transition:"all .15s"};
-const bpFill={...bp,background:"var(--ac)",color:"var(--bg)",border:"none"};
-const bo={...bp,color:"var(--t2)",borderColor:"var(--bd)"};
-
-const Card=({children,style:s,onClick:oc})=> <div onClick={oc} style={{...cd,...s,cursor:oc?"pointer":"default",transition:"border-color .15s"}} onMouseEnter={e=>{if(oc)e.currentTarget.style.borderColor="var(--ac)"}} onMouseLeave={e=>{if(oc)e.currentTarget.style.borderColor="var(--bd)"}}>{children}</div>;
-const Stat=({label:l,value:v,sub:s,color:c="var(--ac)",small:sm})=> <Card style={{flex:1,minWidth:sm?120:145,padding:sm?"12px 14px":"16px 20px"}}><div style={{fontSize:9,fontWeight:600,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,fontFamily:"var(--mono)",marginBottom:6}}>{l}</div><div style={{fontSize:sm?16:22,fontWeight:800,color:c,letterSpacing:-.5,lineHeight:1,fontFamily:"var(--mono)"}}>{v}</div>{s&&<div style={{fontSize:10,color:"var(--t2)",marginTop:4,fontFamily:"var(--mono)"}}>{s}</div>}</Card>;
-const Empty=({emoji:e,title:t,sub:s})=> <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"44px 20px",opacity:.5}}><div style={{fontSize:36,marginBottom:8}}>{e}</div><div style={{fontSize:14,fontWeight:700}}>{t}</div>{s&&<div style={{fontSize:11,color:"var(--t2)",marginTop:3}}>{s}</div>}</div>;
-const Modal=({open:o,onClose:oc,title:t,children:ch})=>{if(!o)return null;return <div style={{position:"fixed",inset:0,zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center"}}><div onClick={oc} style={{position:"absolute",inset:0,background:"rgba(0,0,0,.6)",backdropFilter:"blur(8px)"}}/><div className="su" style={{position:"relative",background:"var(--sf)",borderRadius:12,padding:"24px 28px",maxWidth:420,width:"92%",maxHeight:"85vh",overflowY:"auto",border:"1px solid var(--bd)",boxShadow:"0 0 40px rgba(0,255,136,.05)"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}><h3 style={{fontSize:15,fontWeight:800,fontFamily:"var(--mono)",color:"var(--ac)"}}>[{t.toUpperCase()}]</h3><button onClick={oc} style={{background:"var(--bg)",border:"1px solid var(--bd)",borderRadius:4,width:28,height:28,cursor:"pointer",color:"var(--t2)",fontSize:12}}>✕</button></div>{ch}</div></div>};
 
 // ═══════════════════════════════════════════════════════════
 // MAIN
@@ -255,6 +242,7 @@ export default function FinanceOS(){
     {id:"add",ic:"＋",lb:"Agregar"},
     {id:"budget",ic:"▤",lb:"Presupuesto",ss:[{id:"budgets",lb:"Presupuestos"},{id:"bills",lb:"Recurrentes"}]},
     {id:"bank",ic:"⌂",lb:"Bancos",ss:[{id:"bankOv",lb:"Resumen"},{id:"connect",lb:"Conectar"}]},
+    {id:"crypto",ic:"₿",lb:"Crypto",ss:[{id:"forecast",lb:"Pronóstico"},{id:"mining",lb:"Minería"},{id:"invest",lb:"Invertir"},{id:"academy",lb:"Academia"},{id:"theory",lb:"Teoría"}]},
     {id:"wishlist",ic:"★",lb:"Wish List"},
     {id:"goals",ic:"◎",lb:"Metas",ss:[{id:"savings",lb:"Ahorro"},{id:"targets",lb:"Metas"}]},
     {id:"ai",ic:"✦",lb:"OSAI",ss:[{id:"chat",lb:"Terminal"},{id:"alerts",lb:"Alertas"}]},
@@ -375,6 +363,9 @@ export default function FinanceOS(){
         <div style={{fontFamily:"var(--mono)",fontSize:9,color:"var(--t3)",letterSpacing:2,marginBottom:8}}>RECAP · {new Date().toLocaleString("es",{month:"long",year:"numeric"}).toUpperCase()}</div>
         <div style={{display:"flex",gap:24,flexWrap:"wrap"}}><div><div style={{fontSize:10,color:"var(--t2)"}}>INGRESO</div><div style={{fontSize:22,fontWeight:800,color:"var(--gn)",fontFamily:"var(--mono)"}}>{f(mI)}</div></div><div><div style={{fontSize:10,color:"var(--t2)"}}>GASTO</div><div style={{fontSize:22,fontWeight:800,color:"var(--rd)",fontFamily:"var(--mono)"}}>{f(mE)}</div></div><div><div style={{fontSize:10,color:"var(--t2)"}}>NETO</div><div style={{fontSize:22,fontWeight:800,color:mI>=mE?"var(--gn)":"var(--rd)",fontFamily:"var(--mono)"}}>{f(mI-mE)}</div></div></div>
       </Card><div style={{display:"flex",gap:8}}><Stat label="Ahorro" value={`${mSR.toFixed(0)}%`} color={mSR>=40?"var(--gn)":"var(--rd)"} small/><Stat label="Score" value={`${hs}`} color={hs>=60?"var(--gn)":"var(--am)"} small/><Stat label="Canon" value={mSR>=40?"OK":"FAIL"} color={mSR>=40?"var(--gn)":"var(--rd)"} small/></div></div>}
+
+    // CRYPTO
+    if(nav==="crypto") return <CryptoModule sub={sub}/>;
 
     // ADD TX
     if(nav==="add") return <AddTx mc={mc} myC={myC} rates={rates} ctx={ctx} sr={sr} onAdd={tx=>{
